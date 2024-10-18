@@ -6,12 +6,12 @@ use ggez::graphics::Color;
 pub enum CellType {
     Empty,
     Path(Color),
-    Waypoint,
+    Start,
+    End,
 }
 
 pub struct Grid {
     pub cells: Vec<Vec<CellType>>,
-    pub waypoints: Vec<(usize, usize)>,
     pub path: Vec<(usize, usize)>,
 }
 
@@ -19,60 +19,56 @@ impl Grid {
     pub fn new(settings: &Settings) -> Self {
         let mut grid = Grid {
             cells: vec![vec![CellType::Empty; settings.grid_width]; settings.grid_height],
-            waypoints: Vec::new(),
             path: Vec::new(),
         };
-        grid.generate_waypoints(settings);
-        grid.generate_path();
+        grid.generate_path(settings);
         grid
     }
 
-    fn generate_waypoints(&mut self, settings: &Settings) {
+    fn generate_path(&mut self, settings: &Settings) {
         let mut rng = rand::thread_rng();
-        for _ in 0..settings.num_waypoints {
-            let x = rng.gen_range(0..settings.grid_width);
-            let y = rng.gen_range(0..settings.grid_height);
-            self.waypoints.push((x, y));
-            self.cells[y][x] = CellType::Waypoint;
-        }
-    }
-
-    fn generate_path(&mut self) {
-        let mut path = Vec::new();
-        for waypoints in self.waypoints.windows(2) {
-            let (x1, y1) = waypoints[0];
-            let (x2, y2) = waypoints[1];
-            self.connect_points(x1, y1, x2, y2, &mut path);
-        }
+        let start_x = 0;
+        let start_y = rng.gen_range(0..settings.grid_height);
         
-        // Color the path like a rainbow
-        let total_length = path.len();
-        for (i, &(x, y)) in path.iter().enumerate() {
-            let color = self.rainbow_color(i as f32 / total_length as f32);
-            if self.cells[y][x] != CellType::Waypoint {
-                self.cells[y][x] = CellType::Path(color);
+        self.path.push((start_x, start_y));
+        self.cells[start_y][start_x] = CellType::Start;
+
+        let min_path_length = (settings.grid_width + settings.grid_height) / 2;
+        let max_path_length = settings.grid_width * settings.grid_height / 2;
+
+        let target_length = rng.gen_range(min_path_length..=max_path_length);
+
+        while self.path.len() < target_length {
+            let (last_x, last_y) = *self.path.last().unwrap();
+            let mut possible_moves = Vec::new();
+
+            // Check all four directions
+            for &(dx, dy) in &[(0, 1), (0, -1), (1, 0), (-1, 0)] {
+                let new_x = last_x as i32 + dx;
+                let new_y = last_y as i32 + dy;
+
+                if new_x >= 0 && new_x < settings.grid_width as i32 &&
+                   new_y >= 0 && new_y < settings.grid_height as i32 {
+                    let new_x = new_x as usize;
+                    let new_y = new_y as usize;
+                    if self.cells[new_y][new_x] == CellType::Empty {
+                        possible_moves.push((new_x, new_y));
+                    }
+                }
             }
-        }
-        
-        self.path = path;
-    }
 
-    fn connect_points(&self, x1: usize, y1: usize, x2: usize, y2: usize, path: &mut Vec<(usize, usize)>) {
-        let mut x = x1 as i32;
-        let mut y = y1 as i32;
-        let x2 = x2 as i32;
-        let y2 = y2 as i32;
-
-        while x != x2 || y != y2 {
-            path.push((x as usize, y as usize));
-
-            if x != x2 {
-                x += if x < x2 { 1 } else { -1 };
-            } else if y != y2 {
-                y += if y < y2 { 1 } else { -1 };
+            if possible_moves.is_empty() {
+                break; // Path is stuck, end it here
             }
+
+            let next_pos = possible_moves[rng.gen_range(0..possible_moves.len())];
+            self.path.push(next_pos);
+            self.cells[next_pos.1][next_pos.0] = CellType::Path(self.rainbow_color(self.path.len() as f32 / target_length as f32));
         }
-        path.push((x2 as usize, y2 as usize));
+
+        // Set the last cell as the end
+        let (end_x, end_y) = *self.path.last().unwrap();
+        self.cells[end_y][end_x] = CellType::End;
     }
 
     fn rainbow_color(&self, t: f32) -> Color {

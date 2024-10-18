@@ -30,7 +30,8 @@ fn render_grid(ctx: &mut Context, state: &GameState) -> GameResult {
             let color = match cell {
                 CellType::Empty => Color::from_rgb(200, 200, 200),
                 CellType::Path(color) => *color,
-                CellType::Waypoint => Color::from_rgb(100, 100, 100),
+                CellType::Start => Color::GREEN,
+                CellType::End => Color::RED,
             };
 
             let rect = Rect::new(
@@ -79,7 +80,6 @@ fn render_enemies(ctx: &mut Context, state: &GameState) -> GameResult {
 
         graphics::draw(ctx, &circle, (ggez::mint::Point2 { x: 0.0, y: 0.0 },))?;
 
-        // Render health bar
         let health_bar_height = 5.0;
         let health_bar_width = state.settings.cell_size * (enemy.health as f32 / enemy.max_health as f32);
         let health_bar_rect = Rect::new(

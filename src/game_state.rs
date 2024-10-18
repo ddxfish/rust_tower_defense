@@ -98,7 +98,7 @@ impl GameState {
             1 => EnemyType::Normal,
             _ => EnemyType::Strong,
         };
-
+    
         let start_position = self.grid.path[0];
         self.enemies.push(Enemy::new(enemy_type, start_position, &self.settings));
     }
