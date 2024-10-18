@@ -1,9 +1,9 @@
-use crate::enemy::Enemy;
+use crate::entities::Grunt;
 use crate::level::Level;
 use crate::settings::Settings;
 
 pub struct GameController {
-    pub enemies: Vec<Enemy>,
+    pub enemies: Vec<Grunt>,
     pub spawn_timer: f32,
     pub level: Level,
 }
@@ -30,7 +30,7 @@ impl GameController {
         self.spawn_timer += delta_time;
         if self.spawn_timer >= settings.enemy_spawn_interval {
             self.spawn_timer = 0.0;
-            self.enemies.push(Enemy::new(
+            self.enemies.push(Grunt::new(
                 self.level.start,
                 settings.enemy_health,
                 settings.enemy_speed,

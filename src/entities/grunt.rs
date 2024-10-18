@@ -1,21 +1,24 @@
 use crate::level::Point;
+use super::healthbar::HealthBar;
 
-pub struct Enemy {
+pub struct Grunt {
     pub position: (f32, f32),
     pub health: f32,
     pub speed: f32,
     pub path_index: usize,
     pub target: (f32, f32),
+    pub health_bar: HealthBar,
 }
 
-impl Enemy {
+impl Grunt {
     pub fn new(start: Point, health: f32, speed: f32) -> Self {
-        Enemy {
+        Grunt {
             position: (start.x as f32 + 0.5, start.y as f32 + 0.5),
             health,
             speed,
             path_index: 0,
             target: (start.x as f32 + 0.5, start.y as f32 + 0.5),
+            health_bar: HealthBar::new(health),
         }
     }
 
@@ -40,5 +43,7 @@ impl Enemy {
             self.position.0 += move_x;
             self.position.1 += move_y;
         }
+
+        self.health_bar.update(self.health, self.position);
     }
 }
