@@ -1,12 +1,12 @@
 use ggez::{Context, GameResult};
-use ggez::graphics::{self, Canvas, Color, DrawMode, Mesh, Rect, Text};
+use ggez::graphics::{self, Canvas, Color, DrawMode, Mesh, Rect, Text, TextFragment};
 
 use crate::settings::Settings;
 use crate::towers::TowerType;
 
-const MENU_WIDTH: f32 = 150.0;
-const MENU_HEIGHT: f32 = 120.0;
-const BUTTON_HEIGHT: f32 = 30.0;
+const MENU_WIDTH: f32 = 300.0;  // Doubled from 150.0
+const MENU_HEIGHT: f32 = 180.0;  // Doubled from 120.0 and reduced by one row
+const BUTTON_HEIGHT: f32 = 60.0;  // Doubled from 30.0
 
 pub fn render_tower_menu(
     ctx: &mut Context,
@@ -53,7 +53,7 @@ fn render_tower_option(
     )?;
     canvas.draw(&button_bg, graphics::DrawParam::default());
 
-    let text = Text::new(name);
+    let text = Text::new(TextFragment::new(name).scale(32.0));  // Increased font size
     let text_dims = text.measure(ctx)?;
     canvas.draw(
         &text,
