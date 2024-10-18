@@ -9,6 +9,7 @@ use ggez::graphics::Canvas;
 
 use crate::game_controller::GameController;
 use crate::settings::Settings;
+use crate::ui::status_strip;
 
 pub fn render_game(
     ctx: &mut Context,
@@ -26,6 +27,8 @@ pub fn render_game(
     if tower_menu_open {
         tower_menu::render_tower_menu(ctx, canvas, tower_menu_position, settings)?;
     }
+
+    status_strip::render_status_strip(ctx, canvas, &game_controller.game_stats, settings)?;
 
     Ok(())
 }

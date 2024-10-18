@@ -2,12 +2,14 @@ use crate::entities::Grunt;
 use crate::level::Level;
 use crate::settings::Settings;
 use crate::towers::{Tower, TowerType};
+use crate::game_stats::GameStats;
 
 pub struct GameController {
     pub enemies: Vec<Grunt>,
     pub towers: Vec<Tower>,
     pub spawn_timer: f32,
     pub level: Level,
+    pub game_stats: GameStats,
 }
 
 impl GameController {
@@ -17,6 +19,7 @@ impl GameController {
             towers: Vec::new(),
             spawn_timer: 0.0,
             level: Level::new(settings),
+            game_stats: GameStats::new(settings.initial_money),
         }
     }
 
@@ -26,8 +29,16 @@ impl GameController {
             enemy.update(&self.level.path, delta_time);
         }
 
-        // Remove enemies that have reached the end
-        self.enemies.retain(|e| e.path_index < self.level.path.len() - 1);
+        // Remove enemies that have reached the end or died
+        self.enemies.retain(|e| {
+            if e.health <= 0.0 {
+                self.game_stats.enemy_killed();
+                self.game_stats.add_money(settings.enemy_kill_reward);
+                false
+            } else {
+                e.path_index < self.level.path.len() - 1
+            }
+        });
 
         // Spawn new enemies
         self.spawn_timer += delta_time;
@@ -43,9 +54,22 @@ impl GameController {
         // TODO: Implement tower attacking logic here
     }
 
-    pub fn add_tower(&mut self, position: (usize, usize), tower_type: TowerType) {
+    pub fn add_tower(&mut self, position: (usize, usize), tower_type: TowerType) -> bool {
         if !self.is_position_on_path(position) {
-            self.towers.push(Tower::new(position, tower_type));
+            let tower_cost = match tower_type {
+                TowerType::Gun => 100,
+                TowerType::Sniper => 150,
+                TowerType::Flame => 200,
+            };
+
+            if self.game_stats.spend_money(tower_cost) {
+                self.towers.push(Tower::new(position, tower_type));
+                true
+            } else {
+                false
+            }
+        } else {
+            false
         }
     }
 

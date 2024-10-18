@@ -2,6 +2,7 @@ use ggez::{ContextBuilder, event};
 use crate::game_state::GameState;
 use crate::settings::Settings;
 use crate::towers::TowerType;
+
 mod rendering;
 mod entities;
 mod towers;
@@ -9,6 +10,8 @@ mod level;
 mod settings;
 mod game_controller;
 mod game_state;
+mod game_stats;
+mod ui;
 
 fn main() -> ggez::GameResult {
     let settings = Settings::new();

@@ -72,8 +72,9 @@ impl EventHandler for GameState {
                     self.tower_menu_position,
                     &self.settings,
                 ) {
-                    self.game_controller.add_tower(self.tower_menu_position, tower_type);
-                    self.tower_menu_open = false;
+                    if self.game_controller.add_tower(self.tower_menu_position, tower_type) {
+                        self.tower_menu_open = false;
+                    }
                 }
             }
             MouseButton::Left => {
