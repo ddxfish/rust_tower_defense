@@ -5,6 +5,7 @@ pub struct Settings {
     pub window_width: f32,
     pub window_height: f32,
     pub num_waypoints: usize,
+    pub path_width: f32,
 }
 
 impl Settings {
@@ -18,7 +19,8 @@ impl Settings {
             cell_size,
             window_width: grid_width as f32 * cell_size,
             window_height: grid_height as f32 * cell_size,
-            num_waypoints: 5,  // You can adjust this number as needed
+            num_waypoints: 5,
+            path_width: 4.0,
         }
     }
 }

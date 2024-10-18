@@ -1,6 +1,7 @@
 use ggez::{Context, ContextBuilder, GameResult};
 use ggez::graphics::{self, Color, DrawMode, Mesh, Rect};
 use ggez::event::{self, EventHandler};
+use ggez::mint::Point2;
 
 mod rendering;
 mod entities;
@@ -8,7 +9,7 @@ mod towers;
 mod level;
 mod settings;
 
-use level::Level;
+use level::{Level, Point};
 use settings::Settings;
 
 struct GameState {
@@ -55,11 +56,27 @@ impl EventHandler for GameState {
             }
         }
 
-        // Draw path (start, waypoints, and end)
-        for ((x, y), color) in self.level.get_path_colors() {
+        // Draw path
+        let path_points: Vec<Point2<f32>> = self.level.path.iter().map(|p| {
+            Point2 {
+                x: (p.x as f32 + 0.5) * self.settings.cell_size,
+                y: (p.y as f32 + 0.5) * self.settings.cell_size,
+            }
+        }).collect();
+
+        let path_mesh = Mesh::new_line(
+            ctx,
+            &path_points,
+            self.settings.path_width,
+            Color::WHITE,
+        )?;
+        canvas.draw(&path_mesh, graphics::DrawParam::default());
+
+        // Draw waypoints (start, intermediate, and end)
+        for (point, color) in self.level.get_path_colors() {
             let rect = Rect::new(
-                x as f32 * self.settings.cell_size,
-                y as f32 * self.settings.cell_size,
+                point.x as f32 * self.settings.cell_size,
+                point.y as f32 * self.settings.cell_size,
                 self.settings.cell_size,
                 self.settings.cell_size,
             );

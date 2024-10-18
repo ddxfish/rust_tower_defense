@@ -2,61 +2,104 @@ use rand::Rng;
 use crate::settings::Settings;
 use ggez::graphics::Color;
 
+#[derive(Clone, Copy, PartialEq)]
+pub struct Point {
+    pub x: usize,
+    pub y: usize,
+}
+
 pub struct Level {
     pub width: usize,
     pub height: usize,
-    pub start: (usize, usize),
-    pub end: (usize, usize),
-    pub waypoints: Vec<(usize, usize)>,
+    pub start: Point,
+    pub end: Point,
+    pub waypoints: Vec<Point>,
+    pub path: Vec<Point>,
 }
 
 impl Level {
     pub fn new(settings: &Settings) -> Self {
-        let mut rng = rand::thread_rng();
-        let start = (
-            rng.gen_range(0..settings.grid_width),
-            rng.gen_range(0..settings.grid_height),
-        );
-        let end = loop {
-            let end = (
-                rng.gen_range(0..settings.grid_width),
-                rng.gen_range(0..settings.grid_height),
-            );
-            if end != start {
-                break end;
+        loop {
+            let mut rng = rand::thread_rng();
+            let start = Point {
+                x: rng.gen_range(0..settings.grid_width),
+                y: rng.gen_range(0..settings.grid_height),
+            };
+            let end = loop {
+                let end = Point {
+                    x: rng.gen_range(0..settings.grid_width),
+                    y: rng.gen_range(0..settings.grid_height),
+                };
+                if end != start {
+                    break end;
+                }
+            };
+
+            let mut level = Level {
+                width: settings.grid_width,
+                height: settings.grid_height,
+                start,
+                end,
+                waypoints: vec![],
+                path: vec![],
+            };
+
+            if level.generate_waypoints(&mut rng, settings.num_waypoints) {
+                return level;
             }
-        };
-
-        let mut level = Level {
-            width: settings.grid_width,
-            height: settings.grid_height,
-            start,
-            end,
-            waypoints: vec![],
-        };
-
-        level.generate_waypoints(&mut rng, settings.num_waypoints);
-        level
+        }
     }
 
-    fn generate_waypoints(&mut self, rng: &mut impl rand::Rng, num_waypoints: usize) {
+    fn generate_waypoints(&mut self, rng: &mut impl rand::Rng, num_waypoints: usize) -> bool {
+        self.waypoints.clear();
+        self.path.clear();
+
         let mut current = self.start;
+        self.path.push(current);
+
         for _ in 0..num_waypoints {
             let next = loop {
-                let candidate = (
-                    rng.gen_range(0..self.width),
-                    rng.gen_range(0..self.height),
-                );
+                let candidate = Point {
+                    x: rng.gen_range(0..self.width),
+                    y: rng.gen_range(0..self.height),
+                };
                 if candidate != current && !self.waypoints.contains(&candidate) && candidate != self.end {
                     break candidate;
                 }
             };
             self.waypoints.push(next);
+
+            if !self.generate_path_segment(current, next) {
+                return false;
+            }
+
             current = next;
         }
+
+        self.generate_path_segment(current, self.end)
     }
 
-    pub fn get_path_colors(&self) -> Vec<((usize, usize), Color)> {
+    fn generate_path_segment(&mut self, start: Point, end: Point) -> bool {
+        let mut current = start;
+        while current != end {
+            let dx = (end.x as i32 - current.x as i32).signum();
+            let dy = (end.y as i32 - current.y as i32).signum();
+
+            if dx != 0 {
+                current.x = (current.x as i32 + dx) as usize;
+            } else {
+                current.y = (current.y as i32 + dy) as usize;
+            }
+
+            if self.path.contains(&current) {
+                return false;
+            }
+            self.path.push(current);
+        }
+        true
+    }
+
+    pub fn get_path_colors(&self) -> Vec<(Point, Color)> {
         let total_points = 2 + self.waypoints.len(); // start, waypoints, and end
         let mut colors = vec![];
 
