@@ -2,22 +2,21 @@ pub struct Settings {
     pub grid_width: usize,
     pub grid_height: usize,
     pub cell_size: f32,
-    pub num_waypoints: usize,
-    pub spawn_interval: f32,
-    pub tower_costs: [i32; 3],
-    pub enemy_speed: f32,
+    pub window_width: f32,
+    pub window_height: f32,
 }
 
 impl Settings {
     pub fn new() -> Self {
+        let grid_width = 40;
+        let grid_height = 25;
+        let cell_size = 40.0;  // Doubled from 20.0
         Settings {
-            grid_width: 20,
-            grid_height: 15,
-            cell_size: 40.0,
-            num_waypoints: 5,
-            spawn_interval: 1.5,
-            tower_costs: [50, 100, 150], // Basic, Sniper, Splash
-            enemy_speed: 0.5, // 0.5 seconds per tile movement
+            grid_width,
+            grid_height,
+            cell_size,
+            window_width: grid_width as f32 * cell_size,
+            window_height: grid_height as f32 * cell_size,
         }
     }
 }

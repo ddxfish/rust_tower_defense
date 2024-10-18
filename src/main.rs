@@ -1,36 +1,79 @@
 use ggez::{Context, ContextBuilder, GameResult};
+use ggez::graphics::{self, Color, DrawMode, Mesh, Rect};
 use ggez::event::{self, EventHandler};
-use ggez::conf;
 
-mod settings;
-mod grid;
-mod game_state;
+mod rendering;
 mod entities;
-mod ui;
+mod towers;
+mod level;
+mod settings;
 
-use game_state::GameState;
+use level::Level;
+use settings::Settings;
+
+struct GameState {
+    level: Level,
+    settings: Settings,
+}
+
+impl GameState {
+    fn new() -> GameState {
+        let settings = Settings::new();
+        GameState {
+            level: Level::new(&settings),
+            settings,
+        }
+    }
+}
 
 impl EventHandler for GameState {
-    fn update(&mut self, ctx: &mut Context) -> GameResult {
-        self.update(ctx)
+    fn update(&mut self, _ctx: &mut Context) -> GameResult {
+        Ok(())
     }
 
     fn draw(&mut self, ctx: &mut Context) -> GameResult {
-        self.draw(ctx)
-    }
+        let mut canvas = graphics::Canvas::from_frame(ctx, Color::from([0.1, 0.2, 0.3, 1.0]));
 
-    fn mouse_button_down_event(&mut self, ctx: &mut Context, button: event::MouseButton, x: f32, y: f32) {
-        self.handle_mouse_down(ctx, button, x, y);
+        for y in 0..self.level.height {
+            for x in 0..self.level.width {
+                let rect = Rect::new(
+                    x as f32 * self.settings.cell_size,
+                    y as f32 * self.settings.cell_size,
+                    self.settings.cell_size,
+                    self.settings.cell_size,
+                );
+
+                let (color, fill_mode) = if (x, y) == self.level.start {
+                    (Color::GREEN, DrawMode::fill())
+                } else if (x, y) == self.level.end {
+                    (Color::RED, DrawMode::fill())
+                } else {
+                    (Color::WHITE, DrawMode::stroke(1.0))
+                };
+
+                let mesh = Mesh::new_rectangle(
+                    ctx,
+                    fill_mode,
+                    rect,
+                    color,
+                )?;
+
+                canvas.draw(&mesh, graphics::DrawParam::default());
+            }
+        }
+
+        canvas.finish(ctx)?;
+        Ok(())
     }
 }
 
 fn main() -> GameResult {
-    let cb = ContextBuilder::new("tower_defense", "You")
-        .window_setup(conf::WindowSetup::default().title("Tower Defense"))
-        .window_mode(conf::WindowMode::default().dimensions(800.0, 600.0));
+    let settings = Settings::new();
+    let (ctx, event_loop) = ContextBuilder::new("tower_defense", "Your Name")
+        .window_setup(ggez::conf::WindowSetup::default().title("Tower Defense"))
+        .window_mode(ggez::conf::WindowMode::default().dimensions(settings.window_width, settings.window_height))
+        .build()?;
 
-    let (mut ctx, event_loop) = cb.build()?;
-
-    let state = GameState::new(&mut ctx)?;
+    let state = GameState::new();
     event::run(ctx, event_loop, state)
 }
