@@ -2,6 +2,7 @@ use ggez::{Context, GameResult};
 use ggez::graphics::{self, Color};
 use ggez::event::{EventHandler, MouseButton};
 use ggez::timer;
+use ggez::input::mouse::position;
 
 use crate::settings::Settings;
 use crate::game_controller::GameController;
@@ -51,36 +52,34 @@ impl EventHandler for GameState {
 
     fn mouse_button_down_event(
         &mut self,
-        _ctx: &mut Context,
+        ctx: &mut Context,
         button: MouseButton,
         x: f32,
         y: f32,
     ) -> GameResult {
-        if button == MouseButton::Right {
-            let grid_x = (x / self.settings.cell_size) as usize;
-            let grid_y = (y / self.settings.cell_size) as usize;
-            self.tower_menu_open = true;
-            self.tower_menu_position = (grid_x, grid_y);
-        } else if button == MouseButton::Left && self.tower_menu_open {
-            let grid_x = (x / self.settings.cell_size) as usize;
-            let grid_y = (y / self.settings.cell_size) as usize;
-            if grid_x == self.tower_menu_position.0 && grid_y == self.tower_menu_position.1 {
-                self.game_controller.add_tower(self.tower_menu_position, TowerType::Gun);
+        match button {
+            MouseButton::Right => {
+                let grid_x = (x / self.settings.cell_size) as usize;
+                let grid_y = (y / self.settings.cell_size) as usize;
+                self.tower_menu_open = true;
+                self.tower_menu_position = (grid_x, grid_y);
+            }
+            MouseButton::Left if self.tower_menu_open => {
+                let mouse_pos = position(ctx);
+                if let Some(tower_type) = rendering::tower_menu::get_selected_tower(
+                    mouse_pos.x,
+                    mouse_pos.y,
+                    self.tower_menu_position,
+                    &self.settings,
+                ) {
+                    self.game_controller.add_tower(self.tower_menu_position, tower_type);
+                    self.tower_menu_open = false;
+                }
+            }
+            MouseButton::Left => {
                 self.tower_menu_open = false;
             }
-        }
-        Ok(())
-    }
-
-    fn mouse_button_up_event(
-        &mut self,
-        _ctx: &mut Context,
-        button: MouseButton,
-        _x: f32,
-        _y: f32,
-    ) -> GameResult {
-        if button == MouseButton::Right {
-            self.tower_menu_open = false;
+            _ => {}
         }
         Ok(())
     }

@@ -9,8 +9,11 @@ pub struct Tower {
     pub color: Color,
 }
 
+#[derive(Clone, Copy)]
 pub enum TowerType {
     Gun,
+    Sniper,
+    Flame,
 }
 
 impl Tower {
@@ -19,10 +22,26 @@ impl Tower {
             TowerType::Gun => Tower {
                 position,
                 tower_type,
-                range: 1.0,
+                range: 1.5,
                 damage: 10.0,
                 fire_rate: 1.0,
                 color: Color::BLUE,
+            },
+            TowerType::Sniper => Tower {
+                position,
+                tower_type,
+                range: 3.0,
+                damage: 30.0,
+                fire_rate: 0.5,
+                color: Color::RED,
+            },
+            TowerType::Flame => Tower {
+                position,
+                tower_type,
+                range: 1.0,
+                damage: 5.0,
+                fire_rate: 2.0,
+                color: Color::YELLOW,
             },
         }
     }

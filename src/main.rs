@@ -1,7 +1,7 @@
 use ggez::{ContextBuilder, event};
 use crate::game_state::GameState;
 use crate::settings::Settings;
-
+use crate::towers::TowerType;
 mod rendering;
 mod entities;
 mod towers;

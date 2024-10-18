@@ -2,10 +2,10 @@ mod grid;
 mod path;
 mod enemies;
 mod towers;
-mod tower_menu;
+pub mod tower_menu;
 
 use ggez::{Context, GameResult};
-use ggez::graphics::{self, Canvas, Color};
+use ggez::graphics::Canvas;
 
 use crate::game_controller::GameController;
 use crate::settings::Settings;
