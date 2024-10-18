@@ -34,6 +34,7 @@ impl EventHandler for GameState {
     fn draw(&mut self, ctx: &mut Context) -> GameResult {
         let mut canvas = graphics::Canvas::from_frame(ctx, Color::from([0.1, 0.2, 0.3, 1.0]));
 
+        // Draw grid
         for y in 0..self.level.height {
             for x in 0..self.level.width {
                 let rect = Rect::new(
@@ -43,23 +44,34 @@ impl EventHandler for GameState {
                     self.settings.cell_size,
                 );
 
-                let (color, fill_mode) = if (x, y) == self.level.start {
-                    (Color::GREEN, DrawMode::fill())
-                } else if (x, y) == self.level.end {
-                    (Color::RED, DrawMode::fill())
-                } else {
-                    (Color::WHITE, DrawMode::stroke(1.0))
-                };
-
                 let mesh = Mesh::new_rectangle(
                     ctx,
-                    fill_mode,
+                    DrawMode::stroke(1.0),
                     rect,
-                    color,
+                    Color::WHITE,
                 )?;
 
                 canvas.draw(&mesh, graphics::DrawParam::default());
             }
+        }
+
+        // Draw path (start, waypoints, and end)
+        for ((x, y), color) in self.level.get_path_colors() {
+            let rect = Rect::new(
+                x as f32 * self.settings.cell_size,
+                y as f32 * self.settings.cell_size,
+                self.settings.cell_size,
+                self.settings.cell_size,
+            );
+
+            let mesh = Mesh::new_rectangle(
+                ctx,
+                DrawMode::fill(),
+                rect,
+                color,
+            )?;
+
+            canvas.draw(&mesh, graphics::DrawParam::default());
         }
 
         canvas.finish(ctx)?;

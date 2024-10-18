@@ -4,19 +4,21 @@ pub struct Settings {
     pub cell_size: f32,
     pub window_width: f32,
     pub window_height: f32,
+    pub num_waypoints: usize,
 }
 
 impl Settings {
     pub fn new() -> Self {
         let grid_width = 40;
         let grid_height = 25;
-        let cell_size = 40.0;  // Doubled from 20.0
+        let cell_size = 40.0;
         Settings {
             grid_width,
             grid_height,
             cell_size,
             window_width: grid_width as f32 * cell_size,
             window_height: grid_height as f32 * cell_size,
+            num_waypoints: 5,  // You can adjust this number as needed
         }
     }
 }
