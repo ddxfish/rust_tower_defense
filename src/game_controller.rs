@@ -1,9 +1,11 @@
 use crate::entities::Grunt;
 use crate::level::Level;
 use crate::settings::Settings;
+use crate::towers::{Tower, TowerType};
 
 pub struct GameController {
     pub enemies: Vec<Grunt>,
+    pub towers: Vec<Tower>,
     pub spawn_timer: f32,
     pub level: Level,
 }
@@ -12,6 +14,7 @@ impl GameController {
     pub fn new(settings: &Settings) -> Self {
         GameController {
             enemies: Vec::new(),
+            towers: Vec::new(),
             spawn_timer: 0.0,
             level: Level::new(settings),
         }
@@ -36,5 +39,17 @@ impl GameController {
                 settings.enemy_speed,
             ));
         }
+
+        // TODO: Implement tower attacking logic here
+    }
+
+    pub fn add_tower(&mut self, position: (usize, usize), tower_type: TowerType) {
+        if !self.is_position_on_path(position) {
+            self.towers.push(Tower::new(position, tower_type));
+        }
+    }
+
+    fn is_position_on_path(&self, position: (usize, usize)) -> bool {
+        self.level.path.iter().any(|p| p.x == position.0 && p.y == position.1)
     }
 }

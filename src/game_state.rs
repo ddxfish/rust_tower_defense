@@ -1,15 +1,19 @@
 use ggez::{Context, GameResult};
 use ggez::graphics::{self, Color, DrawMode, Mesh, Rect};
-use ggez::event::EventHandler;
+use ggez::event::{EventHandler, MouseButton};
+use ggez::input::mouse;
 use ggez::mint::Point2;
 use ggez::timer;
 
 use crate::settings::Settings;
 use crate::game_controller::GameController;
+use crate::towers::TowerType;
 
 pub struct GameState {
     settings: Settings,
     game_controller: GameController,
+    tower_menu_open: bool,
+    tower_menu_position: (usize, usize),
 }
 
 impl GameState {
@@ -17,6 +21,8 @@ impl GameState {
         GameState {
             game_controller: GameController::new(&settings),
             settings,
+            tower_menu_open: false,
+            tower_menu_position: (0, 0),
         }
     }
 }
@@ -109,8 +115,8 @@ impl EventHandler for GameState {
                 Rect::new(
                     enemy.health_bar.position.0 * self.settings.cell_size,
                     enemy.health_bar.position.1 * self.settings.cell_size,
-                    enemy.health_bar.width,
-                    enemy.health_bar.height,
+                    enemy.health_bar.width * self.settings.cell_size,
+                    enemy.health_bar.height * self.settings.cell_size,
                 ),
                 Color::RED,
             )?;
@@ -123,15 +129,105 @@ impl EventHandler for GameState {
                 Rect::new(
                     enemy.health_bar.position.0 * self.settings.cell_size,
                     enemy.health_bar.position.1 * self.settings.cell_size,
-                    enemy.health_bar.get_fill_width(),
-                    enemy.health_bar.height,
+                    enemy.health_bar.get_fill_width() * self.settings.cell_size,
+                    enemy.health_bar.height * self.settings.cell_size,
                 ),
                 Color::GREEN,
             )?;
             canvas.draw(&health_bar_fill, graphics::DrawParam::default());
         }
 
+        // Draw towers
+        for tower in &self.game_controller.towers {
+            let tower_rect = Rect::new(
+                tower.position.0 as f32 * self.settings.cell_size,
+                tower.position.1 as f32 * self.settings.cell_size,
+                self.settings.cell_size,
+                self.settings.cell_size,
+            );
+
+            let tower_mesh = Mesh::new_rectangle(
+                ctx,
+                DrawMode::fill(),
+                tower_rect,
+                tower.color,
+            )?;
+
+            canvas.draw(&tower_mesh, graphics::DrawParam::default());
+        }
+
+        // Draw tower menu if open
+        if self.tower_menu_open {
+            let menu_rect = Rect::new(
+                self.tower_menu_position.0 as f32 * self.settings.cell_size,
+                self.tower_menu_position.1 as f32 * self.settings.cell_size,
+                self.settings.cell_size * 2.0,
+                self.settings.cell_size,
+            );
+
+            let menu_bg = Mesh::new_rectangle(
+                ctx,
+                DrawMode::fill(),
+                menu_rect,
+                Color::WHITE,
+            )?;
+
+            canvas.draw(&menu_bg, graphics::DrawParam::default());
+
+            let gun_tower_rect = Rect::new(
+                self.tower_menu_position.0 as f32 * self.settings.cell_size,
+                self.tower_menu_position.1 as f32 * self.settings.cell_size,
+                self.settings.cell_size,
+                self.settings.cell_size,
+            );
+
+            let gun_tower_mesh = Mesh::new_rectangle(
+                ctx,
+                DrawMode::fill(),
+                gun_tower_rect,
+                Color::BLUE,
+            )?;
+
+            canvas.draw(&gun_tower_mesh, graphics::DrawParam::default());
+        }
+
         canvas.finish(ctx)?;
+        Ok(())
+    }
+
+    fn mouse_button_down_event(
+        &mut self,
+        _ctx: &mut Context,
+        button: MouseButton,
+        x: f32,
+        y: f32,
+    ) -> GameResult {
+        if button == MouseButton::Right {
+            let grid_x = (x / self.settings.cell_size) as usize;
+            let grid_y = (y / self.settings.cell_size) as usize;
+            self.tower_menu_open = true;
+            self.tower_menu_position = (grid_x, grid_y);
+        } else if button == MouseButton::Left && self.tower_menu_open {
+            let grid_x = (x / self.settings.cell_size) as usize;
+            let grid_y = (y / self.settings.cell_size) as usize;
+            if grid_x == self.tower_menu_position.0 && grid_y == self.tower_menu_position.1 {
+                self.game_controller.add_tower(self.tower_menu_position, TowerType::Gun);
+                self.tower_menu_open = false;
+            }
+        }
+        Ok(())
+    }
+
+    fn mouse_button_up_event(
+        &mut self,
+        _ctx: &mut Context,
+        button: MouseButton,
+        _x: f32,
+        _y: f32,
+    ) -> GameResult {
+        if button == MouseButton::Right {
+            self.tower_menu_open = false;
+        }
         Ok(())
     }
 }

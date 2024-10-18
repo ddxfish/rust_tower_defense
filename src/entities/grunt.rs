@@ -12,12 +12,13 @@ pub struct Grunt {
 
 impl Grunt {
     pub fn new(start: Point, health: f32, speed: f32) -> Self {
+        let position = (start.x as f32 + 0.5, start.y as f32 + 0.5);
         Grunt {
-            position: (start.x as f32 + 0.5, start.y as f32 + 0.5),
+            position,
             health,
             speed,
             path_index: 0,
-            target: (start.x as f32 + 0.5, start.y as f32 + 0.5),
+            target: position,
             health_bar: HealthBar::new(health),
         }
     }

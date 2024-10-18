@@ -12,8 +12,8 @@ impl HealthBar {
             max_health,
             current_health: max_health,
             position: (0.0, 0.0),
-            width: 40.0,
-            height: 5.0,
+            width: 0.8, // Width relative to cell size
+            height: 0.1, // Height relative to cell size
         }
     }
 
@@ -21,7 +21,7 @@ impl HealthBar {
         self.current_health = current_health;
         self.position = (
             entity_position.0 - self.width / 2.0,
-            entity_position.1 - 30.0,
+            entity_position.1 - 0.5, // Position above the entity
         );
     }
 
