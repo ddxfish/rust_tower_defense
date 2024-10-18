@@ -53,8 +53,8 @@ impl GameState {
 
         // Update enemies
         self.enemies.retain_mut(|enemy| {
-            enemy.update(&self.grid);
-            if enemy.reached_end(&self.grid) {  // Fixed: Passed &self.grid as argument
+            enemy.update(&self.grid, dt);
+            if enemy.reached_end(&self.grid) {
                 self.game_over = true;
                 false
             } else if enemy.is_dead() {
@@ -98,7 +98,7 @@ impl GameState {
         };
 
         let start_position = self.grid.path[0];
-        self.enemies.push(Enemy::new(enemy_type, start_position));
+        self.enemies.push(Enemy::new(enemy_type, start_position, &self.settings));
     }
 
     fn start_next_wave(&mut self) {

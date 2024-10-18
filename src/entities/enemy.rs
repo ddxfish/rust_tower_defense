@@ -1,4 +1,5 @@
 use crate::grid::Grid;
+use crate::settings::Settings;
 
 #[derive(Clone, Copy, PartialEq)]
 pub enum EnemyType {
@@ -18,8 +19,8 @@ pub struct Enemy {
 }
 
 impl Enemy {
-    pub fn new(enemy_type: EnemyType, start_position: (usize, usize)) -> Self {
-        let (health, speed) = match enemy_type {
+    pub fn new(enemy_type: EnemyType, start_position: (usize, usize), settings: &Settings) -> Self {
+        let (health, speed_multiplier) = match enemy_type {
             EnemyType::Weak => (50, 1.0),
             EnemyType::Normal => (100, 0.8),
             EnemyType::Strong => (200, 0.6),
@@ -30,14 +31,14 @@ impl Enemy {
             position: start_position,
             health,
             max_health: health,
-            speed,
+            speed: settings.enemy_speed * speed_multiplier,
             progress: 0.0,
             path_index: 0,
         }
     }
 
-    pub fn update(&mut self, grid: &Grid) {
-        self.progress += self.speed;
+    pub fn update(&mut self, grid: &Grid, dt: f32) {
+        self.progress += self.speed * dt;
         while self.progress >= 1.0 && self.path_index < grid.path.len() - 1 {
             self.progress -= 1.0;
             self.path_index += 1;

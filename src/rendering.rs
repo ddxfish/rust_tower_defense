@@ -29,7 +29,7 @@ fn render_grid(ctx: &mut Context, state: &GameState) -> GameResult {
         for (x, cell) in row.iter().enumerate() {
             let color = match cell {
                 CellType::Empty => Color::from_rgb(200, 200, 200),
-                CellType::Path => Color::from_rgb(150, 150, 150),
+                CellType::Path(color) => *color,
                 CellType::Waypoint => Color::from_rgb(100, 100, 100),
             };
 

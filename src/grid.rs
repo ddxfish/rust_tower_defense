@@ -1,10 +1,11 @@
 use crate::settings::Settings;
 use rand::Rng;
+use ggez::graphics::Color;
 
 #[derive(Clone, PartialEq)]
 pub enum CellType {
     Empty,
-    Path,
+    Path(Color),
     Waypoint,
 }
 
@@ -44,10 +45,12 @@ impl Grid {
             self.connect_points(x1, y1, x2, y2, &mut path);
         }
         
-        // Update cells after generating the entire path
-        for &(x, y) in &path {
+        // Color the path like a rainbow
+        let total_length = path.len();
+        for (i, &(x, y)) in path.iter().enumerate() {
+            let color = self.rainbow_color(i as f32 / total_length as f32);
             if self.cells[y][x] != CellType::Waypoint {
-                self.cells[y][x] = CellType::Path;
+                self.cells[y][x] = CellType::Path(color);
             }
         }
         
@@ -55,31 +58,27 @@ impl Grid {
     }
 
     fn connect_points(&self, x1: usize, y1: usize, x2: usize, y2: usize, path: &mut Vec<(usize, usize)>) {
-        let dx = (x2 as i32 - x1 as i32).abs();
-        let dy = (y2 as i32 - y1 as i32).abs();
-        let sx = if x1 < x2 { 1 } else { -1 };
-        let sy = if y1 < y2 { 1 } else { -1 };
-        let mut err = dx - dy;
-
         let mut x = x1 as i32;
         let mut y = y1 as i32;
+        let x2 = x2 as i32;
+        let y2 = y2 as i32;
 
-        loop {
+        while x != x2 || y != y2 {
             path.push((x as usize, y as usize));
 
-            if x == x2 as i32 && y == y2 as i32 {
-                break;
-            }
-
-            let e2 = 2 * err;
-            if e2 > -dy {
-                err -= dy;
-                x += sx;
-            }
-            if e2 < dx {
-                err += dx;
-                y += sy;
+            if x != x2 {
+                x += if x < x2 { 1 } else { -1 };
+            } else if y != y2 {
+                y += if y < y2 { 1 } else { -1 };
             }
         }
+        path.push((x2 as usize, y2 as usize));
+    }
+
+    fn rainbow_color(&self, t: f32) -> Color {
+        let r = (1.0 - t) * 2.0;
+        let g = 2.0 - (2.0 * t - 1.0).abs();
+        let b = t * 2.0;
+        Color::new(r.min(1.0).max(0.0), g.min(1.0).max(0.0), b.min(1.0).max(0.0), 1.0)
     }
 }

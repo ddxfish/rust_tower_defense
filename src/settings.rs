@@ -5,6 +5,7 @@ pub struct Settings {
     pub num_waypoints: usize,
     pub spawn_interval: f32,
     pub tower_costs: [i32; 3],
+    pub enemy_speed: f32,
 }
 
 impl Settings {
@@ -16,6 +17,7 @@ impl Settings {
             num_waypoints: 5,
             spawn_interval: 1.5,
             tower_costs: [50, 100, 150], // Basic, Sniper, Splash
+            enemy_speed: 0.5, // 0.5 seconds per tile movement
         }
     }
 }
