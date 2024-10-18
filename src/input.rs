@@ -1,6 +1,8 @@
 use ggez::{Context, GameResult};
 use ggez::event::MouseButton;
 use ggez::graphics::Rect;
+use crate::grid_renderer;
+use crate::ui_renderer;
 
 use crate::game_state::GameState;
 use crate::entities::{Tower, TowerType};
@@ -20,7 +22,7 @@ fn handle_left_click(state: &mut GameState, x: f32, y: f32) -> GameResult {
     if grid_x < state.settings.grid_width && grid_y < state.settings.grid_height {
         if state.grid.cells[grid_y][grid_x] == crate::grid::CellType::Empty {
             if let Some((menu_x, menu_y)) = state.active_tower_menu {
-                if let Some(tower_type) = get_selected_tower_type(x, y, menu_x, menu_y) {
+                if let Some(tower_type) = ui_renderer::get_selected_tower_type(x, y, menu_x, menu_y) {
                     let tower_cost = state.settings.tower_costs[tower_type as usize];
                     if state.money >= tower_cost {
                         if let Some((target_x, target_y)) = state.tower_target {
