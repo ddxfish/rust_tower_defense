@@ -1,0 +1,15 @@
+[package]
+name = "tower_defense"
+version = "0.1.0"
+edition = "2021"
+authors = ["Your Name <your.email@example.com>"]
+
+[dependencies]
+ggez = "0.7"
+rand = "0.8"
+
+[profile.dev]
+opt-level = 1
+
+[profile.release]
+opt-level = 3
