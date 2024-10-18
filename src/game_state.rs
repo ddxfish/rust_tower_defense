@@ -7,13 +7,13 @@ use crate::grid::Grid;
 use crate::entities::{Enemy, Tower, EnemyType, TowerType};
 use crate::rendering::render_game;
 use crate::input::handle_input;
-
 pub struct GameState {
     pub settings: Settings,
     pub grid: Grid,
     pub enemies: Vec<Enemy>,
     pub towers: Vec<Tower>,
     pub active_tower_menu: Option<(f32, f32)>,
+    pub tower_target: Option<(usize, usize)>, // New field to store the target position
     pub money: i32,
     pub wave: usize,
     pub enemies_to_spawn: usize,
@@ -31,6 +31,7 @@ impl GameState {
             enemies: Vec::new(),
             towers: Vec::new(),
             active_tower_menu: None,
+            tower_target: None, // Initialize the new field
             money: 100,
             wave: 1,
             enemies_to_spawn: 10,
@@ -38,6 +39,7 @@ impl GameState {
             game_over: false,
         })
     }
+
 
     pub fn update(&mut self, ctx: &mut Context) -> GameResult {
         if self.game_over {

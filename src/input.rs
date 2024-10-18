@@ -23,17 +23,22 @@ fn handle_left_click(state: &mut GameState, x: f32, y: f32) -> GameResult {
                 if let Some(tower_type) = get_selected_tower_type(x, y, menu_x, menu_y) {
                     let tower_cost = state.settings.tower_costs[tower_type as usize];
                     if state.money >= tower_cost {
-                        state.towers.push(Tower::new(tower_type, (grid_x, grid_y)));
-                        state.money -= tower_cost;
-                        state.active_tower_menu = None;
+                        if let Some((target_x, target_y)) = state.tower_target {
+                            state.towers.push(Tower::new(tower_type, (target_x, target_y)));
+                            state.money -= tower_cost;
+                            state.active_tower_menu = None;
+                            state.tower_target = None;
+                        }
                     }
                 }
             } else {
                 state.active_tower_menu = Some((x, y));
+                state.tower_target = Some((grid_x, grid_y));
             }
         }
     } else {
         state.active_tower_menu = None;
+        state.tower_target = None;
     }
 
     Ok(())
@@ -41,6 +46,7 @@ fn handle_left_click(state: &mut GameState, x: f32, y: f32) -> GameResult {
 
 fn handle_right_click(state: &mut GameState) -> GameResult {
     state.active_tower_menu = None;
+    state.tower_target = None;
     Ok(())
 }
 
